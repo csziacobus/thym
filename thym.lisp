@@ -4,8 +4,7 @@
 
 (defun op (expr) (first expr))
 (defun args (expr) (rest expr))
-(defun varp (obj) (and (symbolp obj) (starts-with #\? (symbol-name obj))))
-(defun funp (obj) (and (symbolp obj) (not (varp obj))))
+(defun varp (obj) (symbolp obj))
 
 (defun combine-constants (op args)
   (list* op

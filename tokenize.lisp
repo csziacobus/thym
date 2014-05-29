@@ -33,11 +33,10 @@
   ("log" (return (values 'log :op)))
   ("ln" (return (values 'log :op)))
   ("[A-Za-z_][A-Za-z_\d]*"
-   (return (values (read-from-string (strings "?" $@)) :var)))
+   (return (values (read-from-string $@) :var)))
   ("[0-9]*\\.?[0-9]+"
    (return (values (read-from-string $@) :number)))
-  ("[ \\n\\t]+" ; ignore whitespace
-   ))
+  ("[ \\n\\t]+" #| ignore whitespace |#))
 
 (defparameter +delimiters+
   (list :lparen :rparen))
@@ -75,9 +74,7 @@
 (defun untokenize (expr)
   "Takes a fully parenthesized list."
   (if (atom expr)
-      (if (varp expr)
-	  (subseq (write-to-string expr) 1)
-	  (write-to-string expr))
+      (write-to-string expr)
       (with-output-to-string (string)
 	(dolist (element expr)
 	  (when (consp element)
