@@ -13,7 +13,7 @@
   ("\\-" (return '-))
   ("\\*" (return '*))
   ("/" (return '/))
-  ("\\^" (return 'expt))
+  ("\\^" (return '^))
   ("\\i" (return #C (0 1)))
   ("pi" (return 'pi))
   ("π" (return 'pi))
