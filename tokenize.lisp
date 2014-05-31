@@ -32,7 +32,7 @@
   ("atanh" (return (values 'atanh :op)))
   ("log" (return (values 'log :op)))
   ("ln" (return (values 'log :op)))
-  ("[A-Za-z_][A-Za-z_\d]*"
+  ("[A-Za-z_]"
    (return (values (read-from-string $@) :var)))
   ("[0-9]*\\.?[0-9]+"
    (return (values (read-from-string $@) :number)))
@@ -61,7 +61,7 @@
 			(append (first expr)
 				(list our-context)))))
 	     (progn
-	       (when (and (member prev-tag '(:number :rparen))
+	       (when (and (member prev-tag '(:number :var :rparen))
 			(member tag '(:op :var :lparen)))
 		 (setf (first expr)
 		       (append (first expr) (list '*))))
