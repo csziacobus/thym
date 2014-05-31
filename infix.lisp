@@ -69,12 +69,14 @@
   (cond ((atom expr) expr)
 	((singlep expr)
 	 (infix->prefix (first expr)))
+	((eq (first expr) '-) ;; Unary minus
+	 (destructuring-bind (op . args) expr
+	   (declare (ignore op))
+	   `(* -1 ,(infix->prefix args))))
 	((not (member-if #'infix-p expr))
 	 (destructuring-bind (op . args) expr
 	   (let ((args (infix->prefix args)))
-	     (if (eq op '-)
-		 `(+ (* -1 ,args))
-		 `(,op ,args)))))
+	     (list* op (ensure-list args)))))
 	(t
 	 (destructuring-bind (lhs op rhs) expr
 	   (let ((lhs (infix->prefix lhs))
