@@ -2,16 +2,30 @@
 
 (in-package #:thym)
 
+(defvar *factorp* nil "Determines whether expressions should be factored.")
+
 (defun ^ (base power) (expt base power))
 
 (defun op (expr) (first expr))
 (defun args (expr) (rest expr))
 (defun varp (obj) (symbolp obj))
 
-(defun operatorp (op expr) (eq (op expr) op))
+(defun operatorp (op expr) (and (consp expr) (eq (op expr) op)))
 (defun sump (expr) (operatorp '+ expr))
 (defun productp (expr) (operatorp '* expr))
 (defun powerp (expr) (operatorp '^ expr))
+
+(defun remove-sums (args) (remove-if #'sump args))
+(defun keep-sums (args) (remove-if-not #'sump args))
+
+(defun remove-products (args) (remove-if #'productp args))
+(defun keep-products (args) (remove-if-not #'productp args))
+
+(defun remove-powers (args) (remove-if #'powerp args))
+(defun keep-powers (args) (remove-if-not #'powerp args))
+
+(defun base (power) (second power))
+(defun exponent (power) (third power))
 
 (defun sym-op (op) (symbolicate "s" op))
 
