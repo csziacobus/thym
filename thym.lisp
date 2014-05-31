@@ -34,19 +34,34 @@
      ,@body))
 
 (defun combine-constants (op args)
-  (list* op
-	 (apply op (mapcar #'sym (keep-numbers args)))
+  (list* (apply op (mapcar #'sym (keep-numbers args)))
 	 (mapcar #'sym (remove-numbers args))))
+
+(defun combine* (args)
+  (let* ((powers (keep-powers args))
+	 (bases (remove-duplicates (mapcar #'base powers)
+				  :test #'equalp)))
+    (append
+     (remove-powers args)
+     (mapcar (lambda (base)
+	       (list '^ base
+		     (reduce (sym-op '+)
+			     (mapcar #'exponent
+				     (remove-if-not
+				      (lambda (x)
+					(equalp (base x) base))
+				      powers)))))
+	     bases))))
 
 (defsym + (&rest args)
   (if (some #'numberp args)
-      (combine-constants '+ args)
+      `(+ ,@(combine-constants '+ args))
       `(+ ,@args)))
 
 (defsym * (&rest args)
   (if (some #'numberp args)
-      (combine-constants '* args)
-      `(* ,@args)))
+      `(* ,@(combine* (combine-constants '* args)))
+      `(* ,@(combine* args))))
 
 (defun sym (expr)
   "Simplifies on a prefix expression."
