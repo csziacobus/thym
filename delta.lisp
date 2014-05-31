@@ -76,7 +76,7 @@
 	       +
 	       ((delta ,y ,wrt) * (log ,x) * ,x ^ ,y)))) ; Exponent rule
 
-(defsym delta (expr wrt)
+(defun delta (expr wrt)
   (if (atom expr)
       (if (equal expr wrt) 1 0)
       (if (fboundp (delta-op (op expr)))
@@ -84,3 +84,6 @@
 		 wrt
 		 (args expr))
 	  `(delta ,(op expr) ,@(args expr) ,wrt))))
+
+(defsym delta (expr wrt)
+  (sym (delta expr wrt)))
