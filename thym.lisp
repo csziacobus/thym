@@ -67,7 +67,7 @@
   "Simplifies on a prefix expression."
   (if (atom expr)
       expr
-      (if (fboundp (sym-op (op expr))) ;; Check if there are rewrite rules available
+      (if (fboundp (sym-op (op expr))) ; Check if there are rewrite rules available
 	  (apply (sym-op (op expr)) (mapcar #'sym (args expr)))
 	  (list* (op expr) (mapcar #'sym (args expr))))))
 
