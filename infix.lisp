@@ -42,6 +42,7 @@
   "Fully parenthesizes an infix expression."
   (cond ((atom expr) expr)
 	((singlep expr) (parenthesize (first expr)))
+	((eq (first expr) '-) expr) ; Unary minus
 	((member-if #'infix-p expr)
 	 (let ((pos (find-min-precedence expr)))
 	   (list (parenthesize (subseq expr 0 pos))
