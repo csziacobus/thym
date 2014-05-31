@@ -111,3 +111,6 @@
       (intersperse
         (first expr)
         (mapcar #'prefix->infix (rest expr)))))
+
+(defun level (expr)
+  (infix->prefix (prefix->infix expr)))
