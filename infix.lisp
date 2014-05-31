@@ -56,7 +56,7 @@
       (destructuring-bind (lhs op rhs) expr
 	(labels ((make-list-by-precedence (expr)
 		   (if (or (atom expr)
-			  (> (or (precedence (op expr)) 0)
+			  (< (or (precedence (second expr)) 0)
 			     (precedence op)))
 		       (list (unparenthesize expr))
 		       (unparenthesize expr))))
