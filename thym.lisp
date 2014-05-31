@@ -39,19 +39,22 @@
 
 (defun combine* (args)
   (let* ((powers (keep-powers args))
+	 (singles (remove-duplicates (keep-symbols args)
+					 :test #'eq))
 	 (bases (remove-duplicates (mapcar #'base powers)
 				  :test #'equalp)))
     (append
-     (remove-powers args)
-     (mapcar (lambda (base)
-	       (list '^ base
-		     (reduce (sym-op '+)
-			     (mapcar #'exponent
-				     (remove-if-not
-				      (lambda (x)
-					(equalp (base x) base))
-				      powers)))))
-	     bases))))
+     (remove-symbols (remove-powers args))
+     (mapcar (lambda (var)
+	       (list '^ var
+		     (apply (sym-op '+)
+			    (count var args)
+			    (mapcar #'exponent
+				    (remove-if-not
+				     (lambda (x)
+				       (equalp (base x) var))
+				     powers)))))
+	     (union bases singles :test #'eq)))))
 
 (defsym + (&rest args)
   (if (some #'numberp args)

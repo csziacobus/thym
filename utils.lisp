@@ -11,5 +11,11 @@
 (defun remove-numbers (list)
   (remove-if #'numberp list))
 
+(defun keep-symbols (list)
+  (remove-if-not #'symbolp list))
+
+(defun remove-symbols (list)
+  (remove-if #'symbolp list))
+
 (defun strings (&rest args)
   (apply #'concatenate 'string args))
