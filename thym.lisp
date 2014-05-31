@@ -34,8 +34,8 @@
      ,@body))
 
 (defun combine-constants (op args)
-  (list* (apply op (mapcar #'sym (keep-numbers args)))
-	 (mapcar #'sym (remove-numbers args))))
+  (append (mapcar #'sym (remove-numbers args))
+	  (list (apply op (mapcar #'sym (keep-numbers args))))))
 
 (defun combine* (args)
   (let* ((powers (keep-powers args))
