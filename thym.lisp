@@ -64,16 +64,31 @@
 	     (union bases singles :test #'eq)))))
 
 (defsym + (&rest args)
-  (if (some #'numberp args)
-      `(+ ,@(combine-constants '+ args))
-      `(+ ,@args)))
+  (aif (remove 0 (if (some #'numberp args)
+		     (combine-constants '+ args)
+		     args))
+       (if (singlep it)
+	   (first it)
+	   `(+ ,@it))))
 
 (defsym * (&rest args)
-  (if (some #'numberp args)
-      `(* ,@(combine* (combine-constants '* args)))
-      `(* ,@(combine* args))))
+  (aif (remove 1 (combine* (if (some #'numberp args)
+				(combine-constants '* args)
+				args)))
+       (if (singlep it)
+	   (first it)
+	   `(* ,@it))))
 
-(defun sym (expr)
+(defsym ^ (base exponent)
+  (cond ((eql exponent 1) base)
+	((eql base 0) 0)
+	((eql base 1) 1)
+	((and (numberp base)
+	    (numberp exponent))
+	 (^ base exponent))
+	(t `(^ ,base ,exponent))))
+
+(defun sym (expr &aux (expr (level expr)))
   "Simplifies on a prefix expression."
   (if (atom expr)
       expr
