@@ -29,6 +29,13 @@
 
 (defun sym-op (op) (symbolicate "s" op))
 
+(defun function-of (var expr)
+  "Looks for variable somewhere in the expression."
+  (if (atom expr)
+      (eq expr var)
+      (or (function-of var (first expr))
+	 (function-of var (rest expr)))))
+
 (defmacro defsym (op params &body body)
   `(defun ,(sym-op op) ,params
      ,@body))
