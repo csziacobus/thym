@@ -100,12 +100,10 @@
 
 (defun prefix->infix (expr)
   "Converts a prefix expression into infix for consumption."
-  (if (or (atom expr)
-	  (not (infix-p (first expr))))
+  (if (or (atom expr) (not (infix-p (first expr))))
       expr
-      (intersperse
-        (first expr)
-        (mapcar #'prefix->infix (rest expr)))))
+      (intersperse (first expr)
+		   (mapcar #'prefix->infix (rest expr)))))
 
 (defun level (expr)
   (infix->prefix (prefix->infix expr)))
