@@ -32,10 +32,8 @@
   ("atanh" (return (values 'atanh :op)))
   ("log" (return (values 'log :op)))
   ("ln" (return (values 'log :op)))
-  ("[A-Za-z_]"
-   (return (values (read-from-string $@) :var)))
-  ("[0-9]*\\.?[0-9]+"
-   (return (values (read-from-string $@) :number)))
+  ("[A-Za-z_]" (return (values (read-from-string $@) :var)))
+  ("[0-9]*\\.?[0-9]+" (return (values (read-from-string $@) :number)))
   ("[ \\n\\t]+" #| ignore whitespace |#))
 
 (defparameter +delimiters+
