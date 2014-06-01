@@ -40,10 +40,10 @@
   (list :lparen :rparen))
 
 (defun tokenize (string)
-  (let ((next-token (thym-tokens string))
+  (let ((token-generator (thym-tokens string))
 	prev-tag (expr (list nil)))
     (loop
-       (multiple-value-bind (value tag) (funcall next-token)
+       (multiple-value-bind (value tag) (funcall token-generator)
 	 (when (not value)
 	   (return))
 	 (if (member tag +delimiters+)
