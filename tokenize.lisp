@@ -56,8 +56,8 @@
 		   (push () expr))
 		 (let ((our-context (pop expr)))
 		   (setf (first expr)
-			(append (first expr)
-				(list our-context)))))
+			 (append (first expr)
+				 (list our-context)))))
 	     (progn
 	       (when (and (member prev-tag '(:number :var :rparen))
 			(member tag '(:op :var :lparen)))
