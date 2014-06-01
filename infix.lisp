@@ -87,8 +87,8 @@
 		 (labels ((level (expr)
 			    (if (or (member op '(+ *))
 				   (consp expr))
-				(rest expr)
-				(list expr))))
+				(list expr)
+				(rest expr))))
 		   `(,op ,@(level lhs) ,@(level rhs)))))))))
 
 (defun intersperse (op args)
