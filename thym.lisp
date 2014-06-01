@@ -27,7 +27,8 @@
 (defun base (power) (second power))
 (defun exponent (power) (third power))
 
-(defun sym-op (op) (symbolicate "s" op))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun sym-op (op) (symbolicate "s" op)))
 
 (defun function-of (var expr)
   "Looks for variable somewhere in the expression."
