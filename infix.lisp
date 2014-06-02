@@ -23,11 +23,9 @@
 (defun left-assoc (op) (eq (third (infix-props op)) :left))
 (defun right-assoc (op) (eq (third (infix-props op)) :right))
 
-(defun max-precedence (&rest ops)
+(defun max-precedence (ops)
   "Returns the operator with the lowest precedence."
-  (let ((ops-val (mapcar #'precedence ops)))
-    (cdr (assoc (apply #'min ops-val)
-		(reverse (mapcar #'cons ops-val ops))))))
+  (first (stable-sort (reverse ops) #'< :key #'precedence)))
 
 (defun all-ops (expr)
   "Return all operators of an expression. Preserves order."
@@ -35,7 +33,7 @@
 
 (defun find-max-precedence (expr) ; UGLY, use find instead?
   "Finds the position of the operator with highest precedence."
-  (let ((op (apply #'max-precedence (all-ops expr))))
+  (let ((op (max-precedence (all-ops expr))))
     (position op expr :from-end (left-assoc op))))
 
 (defun parenthesize (expr)
