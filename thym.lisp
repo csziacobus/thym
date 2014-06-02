@@ -54,14 +54,15 @@
     (append
      (remove-symbols (remove-powers args))
      (mapcar (lambda (var)
-	       (list '^ var
-		     (apply (sym-op '+)
-			    (count var args)
-			    (mapcar #'exponent
-				    (remove-if-not
-				     (lambda (x)
-				       (equalp (base x) var))
-				     powers)))))
+	       (funcall (sym-op '^)
+			var
+			(apply (sym-op '+)
+			       (count var args)
+			       (mapcar #'exponent
+				       (remove-if-not
+					(lambda (x)
+					  (equalp (base x) var))
+					powers)))))
 	     (union bases singles :test #'eq)))))
 
 (defsym + (&rest args)
