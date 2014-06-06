@@ -36,38 +36,21 @@
   ("[0-9]*\\.?[0-9]+" (return (values (read-from-string $@) :number)))
   ("[ \\n\\t]+" #| ignore whitespace |#))
 
-(defparameter +delimiters+
-  (list :lparen :rparen))
-
 (defun tokenize (string)
-  (let ((token-generator (thym-tokens string))
-	prev-tag (expr (list nil)))
-    (loop
-       (multiple-value-bind (value tag) (funcall token-generator)
-	 (when (not value)
-	   (return))
-	 (if (member tag +delimiters+)
-	     (if (eq tag :lparen)
-		 (progn
-		   (when (member prev-tag '(:number :rparen))
-		     (setf (first expr)
-			   (append (first expr)
-				   (list '*))))
-		   (push () expr))
-		 (let ((our-context (pop expr)))
-		   (setf (first expr)
-			 (append (first expr)
-				 (list our-context)))))
-	     (progn
-	       (when (and (member prev-tag '(:number :var :rparen))
-			(member tag '(:op :var :lparen)))
-		 (setf (first expr)
-		       (append (first expr) (list '*))))
-	       (setf (first expr)
-		     (append (first expr)
-			     (list value)))))
-	 (setf prev-tag tag)))
-    (car (nreverse expr))))
+  (do* ((token-generator (thym-tokens string))
+	(token (multiple-value-list (funcall token-generator))
+	       (multiple-value-list (funcall token-generator)))
+	(value (first token) (first token))
+	(tag (second token) (second token))
+	prev-tag
+	expr)
+       ((not value)
+	(read-from-string (format nil "~A" (nreverse expr))))
+    (when (and (member prev-tag '(:number :var :rparen))
+	     (member tag '(:op :var :lparen)))
+      (push '* expr))
+    (push value expr)
+    (setf prev-tag tag)))
 
 (defun untokenize (expr)
   "Takes a fully parenthesized list."
