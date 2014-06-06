@@ -3,12 +3,12 @@
 (in-package #:thym)
 
 (define-string-lexer thym-tokens
-  ("\\(" (return (values (gensym) :lparen)))
-  ("\\)" (return (values (gensym) :rparen)))
-  ("\\[" (return (values (gensym) :lparen)))
-  ("\\]" (return (values (gensym) :rparen)))
-  ("\\{" (return (values (gensym) :lparen)))
-  ("\\}" (return (values (gensym) :rparen)))
+  ("\\(" (return (values '|(| :lparen)))
+  ("\\)" (return (values '|)| :rparen)))
+  ("\\[" (return (values '|(| :lparen)))
+  ("\\]" (return (values '|)| :rparen)))
+  ("\\{" (return (values '|(|:lparen)))
+  ("\\}" (return (values '|)| :rparen)))
   ("\\+" (return '+))
   ("\\-" (return '-))
   ("\\*" (return '*))
