@@ -80,15 +80,10 @@
 	 (destructuring-bind (lhs op rhs) expr
 	   (let ((lhs (infix->prefix lhs))
 		 (rhs (infix->prefix rhs)))
-	     (if (eq op '-)
-		 `(+ ,lhs (* -1 ,rhs))
-		 (labels ((level (expr)
-			    (if (and (member op '(+ *))
-				   (consp expr)
-				   (eq op (first expr)))
-				(rest expr)
-				(list expr))))
-		   `(,op ,@(level lhs) ,@(level rhs)))))))))
+	     (case op
+	       (- `(+ ,lhs (* -1 ,rhs)))
+	       (/ `(* ,lhs (^ ,rhs -1)))
+	       (t `(,op ,lhs ,rhs))))))))
 
 (defun intersperse (op args)
   (if (singlep args)
@@ -103,6 +98,3 @@
       expr
       (intersperse (first expr)
 		   (mapcar #'prefix->infix (rest expr)))))
-
-(defun level (expr)
-  (infix->prefix (prefix->infix expr)))

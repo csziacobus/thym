@@ -30,6 +30,18 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun sym-op (op) (symbolicate "s" op)))
 
+(defun level (expr)
+  (if (atom expr)
+      expr
+      (let ((op (op expr)))
+	(labels ((%level (expr &aux (expr (level expr)))
+		   (if (and (member op '(+ *))
+			  (consp expr)
+			  (eq op (op expr)))
+		       (rest expr)
+		       (list expr))))
+	  (mapcan #'%level expr)))))
+
 (defun function-of (var expr)
   "Looks for variable somewhere in the expression."
   (if (atom expr)
