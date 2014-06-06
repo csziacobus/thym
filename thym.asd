@@ -13,5 +13,5 @@
 	       (:file "utils")
 	       (:file "infix")
 	       (:file "tokenize")
-               (:file "thym")))
-
+               (:file "thym")
+	       (:file "pretty")))

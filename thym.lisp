@@ -114,14 +114,3 @@
       (if (fboundp (sym-op (op expr))) ; Check if there are rewrite rules available
 	  (apply (sym-op (op expr)) (mapcar #'sym (args expr)))
 	  (list* (op expr) (mapcar #'sym (args expr))))))
-
-(defun ssym (string)
-  "Takes infix string, simplifies, spits out a nice output string."
-  (funcall (compose #'untokenize
-		    #'unparenthesize
-		    #'prefix->infix
-		    #'sym
-		    #'infix->prefix
-		    #'parenthesize
-		    #'tokenize)
-	   string))
