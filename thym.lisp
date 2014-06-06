@@ -99,6 +99,7 @@
 
 (defsym ^ (base exponent)
   (cond ((eql exponent 1) base)
+	((eql exponent 0) 1)
 	((eql base 0) 0)
 	((eql base 1) 1)
 	((and (numberp base)
