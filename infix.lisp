@@ -39,47 +39,47 @@
 (defun parenthesize (expr)
   "Fully parenthesizes an infix expression."
   (cond ((atom expr) expr)
-				((singlep expr) (parenthesize (first expr)))
-				((eq (first expr) '-) expr) ; Unary minus`
-				((member-if #'infix-p expr)
-				 (let ((pos (find-max-precedence expr)))
-					 (list (parenthesize (subseq expr 0 pos))
-								 (nth pos expr)
-								 (parenthesize (subseq expr (1+ pos))))))
-				(t expr)))
+        ((singlep expr) (parenthesize (first expr)))
+        ((eq (first expr) '-) expr) ; Unary minus`
+        ((member-if #'infix-p expr)
+         (let ((pos (find-max-precedence expr)))
+           (list (parenthesize (subseq expr 0 pos))
+                 (nth pos expr)
+                 (parenthesize (subseq expr (1+ pos))))))
+        (t expr)))
 
 (defun infix->prefix (expr)
   "Converts a fully parenthesized expression into prefix, flattening associative operators and replacing minuses."
   (cond ((or (atom expr) (eq (first expr) 'quote)) expr)
-				((singlep expr)
-				 (infix->prefix (first expr)))
-				((not (infix-p (second expr)))
-				 (destructuring-bind (op . args) expr
-					 (let ((args (infix->prefix args)))
-						 (list* op (if (eq (first args) 'quote)
-													 (list args)
-													 (ensure-list args))))))
-				(t
-				 (destructuring-bind (lhs op rhs) expr
-					 (let ((lhs (infix->prefix lhs))
-								 (rhs (infix->prefix rhs)))
-						 (list op lhs rhs))))))
+        ((singlep expr)
+         (infix->prefix (first expr)))
+        ((not (infix-p (second expr)))
+         (destructuring-bind (op . args) expr
+           (let ((args (infix->prefix args)))
+             (list* op (if (eq (first args) 'quote)
+                           (list args)
+                           (ensure-list args))))))
+        (t
+         (destructuring-bind (lhs op rhs) expr
+           (let ((lhs (infix->prefix lhs))
+                 (rhs (infix->prefix rhs)))
+             (list op lhs rhs))))))
 
 (defun intersperse-with-precedence (expr)
-	(let* ((op (type-of expr))
-				 (args (mapcar (lambda (arg)
-												 (if (or (numberp arg)
-																 (symbolp arg)
-																 (> (or (precedence (type-of arg)) 0)
-																		(or (precedence op))))
-														 arg
-														 (list arg)))
-											 (args expr))))
-		(rest (loop for arg in args
-						 collect op collect arg))))
+  (let* ((op (type-of expr))
+         (args (mapcar (lambda (arg)
+                         (if (or (numberp arg)
+                                 (symbolp arg)
+                                 (> (or (precedence (type-of arg)) 0)
+                                    (or (precedence op))))
+                             arg
+                             (list arg)))
+                       (args expr))))
+    (rest (loop for arg in args
+             collect op collect arg))))
 
 (defmacro parse (string)
-	(funcall (compose #'infix->prefix
-										#'parenthesize
-										#'tokenize)
-					 string))
+  (funcall (compose #'infix->prefix
+                    #'parenthesize
+                    #'tokenize)
+           string))

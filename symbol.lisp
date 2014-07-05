@@ -7,9 +7,9 @@
   (remove-if #'symbolp list))
 
 (defmethod deriv ((expr symbol) wrt &optional (n 1))
-	(if (eq expr wrt)
-			1
-			0))
+  (if (eq expr wrt)
+      1
+      0))
 
 (defmethod free-symbols ((expr symbol)) (list expr))
-(defmethod zero? ((expr symbol)) nil)X
+(defmethod zero? ((expr symbol)) nil)
