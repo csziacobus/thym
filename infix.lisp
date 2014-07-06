@@ -66,15 +66,15 @@
              (list op lhs rhs))))))
 
 (defun intersperse-with-precedence (expr)
-  (let ((op (type-of expr)))
-    (labels ((make-list-with-precedence (expr)
-               (if (or (numberp arg)
-                       (symbolp arg)
-                       (> (or (precedence (type-of arg)) 0)
+  (let ((op (type-of expr)) (args (args expr)))
+    (labels ((list-if-precedence (expr)
+               (if (or (numberp expr)
+                       (symbolp expr)
+                       (> (or (precedence (type-of expr)) 0)
                           (or (precedence op))))
-                   arg
-                   (list arg))))
-      (rest (loop for arg in (make-list-with-precedence args)
+                   expr
+                   (list expr))))
+      (rest (loop for arg in (mapcar #'list-if-precedence args)
                collect op collect arg)))))
 
 (defmacro parse (string)
