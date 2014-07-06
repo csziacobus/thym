@@ -7,13 +7,13 @@
   (let ((identity (class-value class 'identity)))
     (macrolet ((filter-trivial (args &body body)
                  `(let ((,args (remove identity ,args)))
-                    (cond ((null args) identity)
-                          ((singlep args) (first args))
+                    (cond ((null ,args) identity)
+                          ((singlep ,args) (first ,args))
                           (t ,@body)))))
       (filter-trivial args
-                      (let ((new-args (level (make-expr class args))))
-                        (filter-trivial new-args
-                                        (make-expr class new-args)))))))
+        (let ((new-args (level (make-expr class args))))
+          (filter-trivial new-args
+            (make-expr class new-args)))))))
 
 (defmethod print-object ((expr assoc-expr) stream)
   (let ((list (intersperse-with-precedence expr)))
