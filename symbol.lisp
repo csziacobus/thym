@@ -14,3 +14,4 @@
 (defmethod free-symbols ((expr symbol)) (list expr))
 (defmethod zero? ((expr symbol)) nil)
 (defmethod exponent ((expr symbol)) 1)
+(defmethod number-free-term ((expr symbol)) expr)

@@ -46,10 +46,17 @@
    "Takes the derivative of an expression n-times."))
 
 (defgeneric free-symbols (expr)
-  (:documentation
-   "Finds free symbols.")
+  (:documentation "Finds free symbols.")
   (:method ((expr expr))
     (reduce #'union (mapcar #'free-symbols (args expr)))))
+
+(defgeneric coefficient (expr)
+  (:documentation "Finds the number term.")
+ (:method ((expr expr)) 1))
+
+(defgeneric number-free-term (expr)
+  (:documentation "Finds the number free term.")
+  (:method ((expr expr)) expr))
 
 (defgeneric taylor-term (expr n wrt &rest previous-terms)
   (:documentation

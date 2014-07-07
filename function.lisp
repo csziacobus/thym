@@ -16,6 +16,11 @@
   (:documentation
    "Returns the first derivative of the function."))
 
+
+(defgeneric antideriv (expr)
+  (:documentation
+   "Looks up the antiderivative of a function and returns a lambda expression."))
+
 (defgeneric inverse (fun)
   (:documentation
    "Returns the inverse of a function as a class designator."))
@@ -36,3 +41,8 @@
                            (first-deriv expr wrt))))
         (dotimes (i (1- n) next-deriv)
           (setf next-deriv (deriv next-deriv wrt))))))
+
+(defmethod equals ((x fun) (y fun) &key) ; one arg-assumption
+  (or (eq x y) (equals (arg x) (arg y))))
+
+(defexpr efun (fun) () ())

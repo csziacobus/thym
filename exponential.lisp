@@ -1,6 +1,6 @@
 (in-package #:thym)
 
-(defexpr exp-base (fun) () ())
+(defexpr exp-base (efun) () ())
 
 (defmethod inverse ((fun exp-base))
   'logarithm)
@@ -11,12 +11,18 @@
 (defexpr exp (exp-base) () (arg)
   (make-expr 'exp (list arg)))
 
+(defmethod print-object ((object exp) stream)
+  (format stream "e ^ ~A" (exponent object)))
+
+(defmethod antideriv ((expr exp))
+  (lambda (u) (exp u)))
+
 (defmethod base ((expr exp))
   (exp 1))
 
 (defmethod first-deriv ((expr exp) wrt)	expr)
 
-(defexpr log (fun) () (arg)
+(defexpr log (efun) () (arg)
   (make-expr 'log (list arg)))
 
 (defmethod first-deriv ((expr log) wrt)

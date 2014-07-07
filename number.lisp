@@ -20,3 +20,5 @@
     (numberp expr)))
 
 (defmethod free-symbols ((expr number)) nil)
+(defmethod number-free-term ((expr number)) nil)
+(defmethod coefficient ((expr number)) expr)

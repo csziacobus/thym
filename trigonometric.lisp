@@ -1,6 +1,6 @@
 (in-package #:thym)
 
-(defexpr trigonometric-function (fun) () ())
+(defexpr trigonometric-function (efun) () ())
 
 (defexpr sin (trigonometric-function) () (arg)
   (if (eql arg 0)
@@ -9,12 +9,18 @@
 
 (defmethod first-deriv ((fun sin) wrt) (cos (arg fun)))
 
+(defmethod antideriv ((fun sin))
+  (lambda (u) (- (cos u))))
+
 (defexpr cos (trigonometric-function) () (arg)
   (if (eql arg 0)
       1
       (make-expr 'cos (list arg))))
 
 (defmethod first-deriv ((fun cos) wrt) (- (sin (arg fun))))
+
+(defmethod antideriv ((fun cos))
+  (lambda (u) (sin u)))
 
 (defexpr tan (trigonometric-function) () (arg)
   (make-expr 'tan (list arg)))

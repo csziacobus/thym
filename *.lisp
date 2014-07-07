@@ -44,9 +44,17 @@
                                    powers)))))
               (union bases singles :test #'eq))))))
 
-(defmethod as-coeff-mul ((expr *))
+(defmethod coefficient ((expr *))
+  (let ((arg (first (args expr))))
+    (if (number? arg) arg 1)))
+
+(defmethod number-free-term ((expr *))
   (let ((args (args expr)))
-    (if (numberp (first args))
-        (values (first args)
-                (apply #'* (rest args)))
-        (values 1 expr))))
+    (if (number? (first args))
+        (apply #'* (rest args))
+        expr)))
+
+(defmacro with-coeff-term ((coefficient number-free-term) expr &body body)
+  `(let ((,coefficient (coefficient ,expr))
+         (,number-free-term (number-free-term ,expr)))
+     ,@body))

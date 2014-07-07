@@ -23,8 +23,5 @@
   (:documentation
    "Generic reducing for associative operators."))
 
-(defmethod equals ((x assoc-expr) y &key &allow-other-keys) nil)
-(defmethod equals (x (y assoc-expr) &key &allow-other-keys) nil)
-
 (defmethod equals ((x assoc-expr) (y assoc-expr) &key &allow-other-keys)
   (equals (string-sort (args x)) (string-sort (args y))))

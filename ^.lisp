@@ -11,7 +11,10 @@
         (t (make-expr '^ (list base exponent)))))
 
 (defmethod print-object ((expr ^) stream)
-  (format stream "~A ^ ~A" (base expr) (exponent expr)))
+  (format stream
+          "~A ^ ~A"
+          (list-if-precedence '^ (base expr))
+          (list-if-precedence '^ (exponent expr))))
 
 (defmacro power-bind ((base exponent) instance &body body)
   `(let ((,base (base ,instance))
@@ -36,3 +39,15 @@
 
 (defmethod equals ((x ^) (y ^) &key &allow-other-keys)
   (equal (args x) (args y)))
+
+(defmethod antideriv ((expr ^))
+  (let ((exponent (exponent expr)))
+    (if (eql (exponent expr) -1)
+        (lambda (u) (log u))
+        (lambda (u) (/ (^ u (+ exponent 1)) (+ exponent 1))))))
+
+(defmethod expand ((expr ^))
+  (assert (typep (base expr) '+) (expr) "Must expand sum.")
+  (apply #'+ (apply #'map-product #'*
+                    (loop repeat (exponent expr)
+                       collect (args (base expr))))))

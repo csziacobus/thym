@@ -23,7 +23,7 @@
           ((typep arg '+)
            (appendf args (args arg)))
           ((typep arg '*)
-           (setf (values c s) (as-coeff-mul arg)))
+           (setf c (coefficient arg) s (number-free-term arg)))
           ((typep arg '^)
            (setf c 1 s arg))
           (t (setf c 1 s arg)))

@@ -65,17 +65,19 @@
                  (rhs (infix->prefix rhs)))
              (list op lhs rhs))))))
 
+(defun list-if-precedence (op expr)
+  (if (or (numberp expr)
+          (symbolp expr)
+          (not (precedence (type-of expr)))
+          (> (precedence (type-of expr))
+             (precedence op)))
+      expr
+      (list expr)))
+
 (defun intersperse-with-precedence (expr)
   (let ((op (type-of expr)) (args (args expr)))
-    (labels ((list-if-precedence (expr)
-               (if (or (numberp expr)
-                       (symbolp expr)
-                       (> (or (precedence (type-of expr)) 0)
-                          (or (precedence op))))
-                   expr
-                   (list expr))))
-      (rest (loop for arg in (mapcar #'list-if-precedence args)
-               collect op collect arg)))))
+    (rest (loop for arg in args
+             collect op collect (list-if-precedence op arg)))))
 
 (defmacro parse (string)
   (funcall (compose #'infix->prefix

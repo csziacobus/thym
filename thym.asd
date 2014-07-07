@@ -24,4 +24,6 @@
    (:file "exponential")
    (:file "^")
    (:file "trigonometric")
-   (:file "factorials")))
+   (:file "factorials")
+   (:file "expr-with-limits")
+   (:file "integral")))
