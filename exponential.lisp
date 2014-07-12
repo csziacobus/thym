@@ -12,7 +12,9 @@
   (make-expr 'exp (list arg)))
 
 (defmethod print-object ((object exp) stream)
-  (format stream "e ^ ~A" (exponent object)))
+  (format stream
+          "e ^ ~A"
+          (list-if-precedence '^ (exponent object))))
 
 (defmethod antideriv ((expr exp))
   (lambda (u) (exp u)))
@@ -30,3 +32,6 @@
 
 (defmethod inverse ((expr log))
   'exp)
+
+(defmethod antideriv ((expr log))
+  (lambda (u) (* u (log u))))

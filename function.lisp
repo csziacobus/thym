@@ -43,6 +43,7 @@
           (setf next-deriv (deriv next-deriv wrt))))))
 
 (defmethod equals ((x fun) (y fun) &key) ; one arg-assumption
-  (or (eq x y) (equals (arg x) (arg y))))
+  (or (eq x y) (and (eq (type-of x) (type-of y))
+                    (equals (arg x) (arg y)))))
 
 (defexpr efun (fun) () ())

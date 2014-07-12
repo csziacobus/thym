@@ -52,7 +52,20 @@
 
 (defgeneric coefficient (expr)
   (:documentation "Finds the number term.")
- (:method ((expr expr)) 1))
+  (:method ((expr expr)) 1))
+
+(defgeneric copy (expr &key recursive)
+  (:documentation "Copies expression.")
+  (:method ((expr expr) &key (recursive t))
+    (if recursive
+        (func expr (copy (args expr)))
+        (func expr (args expr))))
+  (:method ((list list) &key (recursive t))
+    (if recursive
+        (mapcar #'copy (copy-list list))
+        (copy-list list)))
+  (:method ((expr t) &key recursive)
+    (declare (ignore recursive)) expr))
 
 (defgeneric number-free-term (expr)
   (:documentation "Finds the number free term.")
@@ -93,7 +106,7 @@
 
 (defun equals-hash (x)
   (if (typep x 'expr)
-      (sxhash (string-sort (args x)))
+      (sxhash (string-sort (mapcar #'equals-hash (args x))))
       (sxhash x)))
 
 (sb-ext:define-hash-table-test equals equals-hash)

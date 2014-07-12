@@ -15,3 +15,4 @@
 (defmethod zero? ((expr symbol)) nil)
 (defmethod exponent ((expr symbol)) 1)
 (defmethod number-free-term ((expr symbol)) expr)
+(defmethod coefficient ((expr symbol)) 1)

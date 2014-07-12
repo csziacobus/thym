@@ -74,52 +74,63 @@
   (with-limits-expr (function limits vars) expr
     (cond
       ((zero? function) 0)
+      ((notany (lambda (sym)
+                 (member sym vars))
+               (free-symbols function))
+       (apply #'* function vars))
       ((symbolp function)
-       (if (member function vars)
-           (/ (^ function 2) 2)
-           (* function (first vars))))
-      ((and (typep function '^)
-            (member (base function) vars))
-       (funcall (antideriv function) (base function)))
-      ((and (typep function 'efun)
-            (member (arg function) vars))
-       (funcall (antideriv function) (arg function)))
+       (/ (^ function 2) 2))
+      ((deriv-divide function (first vars))
+       (multiple-value-bind (op u du c)
+           (deriv-divide function (first vars))
+         (declare (ignore du))
+         (* c (funcall (antideriv op) u))))
       ((typecase function
          (+
           (apply #'+ (mapcar (lambda (arg)
                                (apply #'integrate arg limits))
                              (args function))))
          (*
-          (cond
-            ((/= 1 (coefficient function))
-             (with-coeff-term (coeff term) function
-               (* coeff (apply #'integrate term limits))))
-            ((deriv-divide function (first vars))
-             (multiple-value-bind (op u du c)
-                 (deriv-divide function (first vars))
-               (declare (ignore du))
-               (* c (funcall (antideriv op) u))))
-            (t expr)))
+          (when (nth-value 1 (coefficient function))
+            (with-coeff-term (coeff term) function
+              (* coeff (apply #'integrate term limits)))))
          (^
-          (apply #'integrate (expand function) limits))
-         (otherwise expr)))
+          (apply #'integrate (expand function) limits))))
+      ((typep function '*)
+       (integrate-by-parts function limits))
       (t expr))))
 
 (defun integrate (function &rest limits)
-  (try (apply #'integral function limits)))
+  (if (and (singlep limits) (symbolp (first limits)))
+      (try (apply #'integral function (list limits)))
+      (try (apply #'integral function limits))))
+
+(defun integrate-by-parts (function limits)
+  (let (dv u v du (args (args function)))
+    (dolist (arg args)
+      (when (typep arg '(or symbol efun))
+        (setf dv arg
+              u (apply #'* (remove dv args))
+              v (apply #'integrate dv limits)
+              du (deriv u (first (first limits))))))
+    (- (* u v) (apply #'integrate (* v du) limits)))) 
 
 (defun map-all (function list)
   (let ((length (length list)) new)
-    (dotimes (i length (nreverse new))
-      (map-combinations (lambda (arg)
-                          (push (apply function arg) new))
-                        list
-                        :length i))))
+    (if (<= length 2)
+        list
+        (dotimes (i length new)
+          (map-combinations (lambda (arg)
+                              (push (apply function arg) new))
+                            (copy list)
+                            :length i)))))
 
 (defun deriv-divide (expr wrt)
-  (check-type expr *)
+  (check-type wrt symbol)
   (with-coeff-term (coeff term) expr
-    (let ((terms (map-all '* (args term)))
+    (let ((terms (if (symbolp term)
+                     term
+                     (map-all '* (args term))))
           op u du c)
       (if (typep term '*) 
           (dolist (mop (args term))
@@ -129,9 +140,9 @@
                   (let ((adu (deriv (arg mop) wrt)))
                     (when (equals mdu (number-free-term adu))
                       (setf op mop 
-                            u mop
+                            u (arg mop)
                             du adu
-                            c (print (coefficient adu))))))
+                            c (coefficient adu)))))
                 (when (and (not op) (typep mop '^))
                   (let ((adu (deriv (base mop) wrt)))
                     (when (equals mdu (number-free-term adu))
@@ -147,16 +158,30 @@
                             du adu
                             c (coefficient adu))))))))      
           (let ((mop term))
-            (cond
-              ((typep mop 'efun)
-               (let ((adu (deriv (arg mop) wrt)))
-                 (setf op mop
-                       u (arg mop)
-                       du adu
-                       c (coefficient adu)))))))
+            (when (typep mop 'efun)
+              (let ((adu (deriv (arg mop) wrt)))
+                (when (number? adu)
+                  (setf op mop
+                        u (arg mop)
+                        du adu
+                        c (coefficient adu)))))
+            (when (and (not op) (typep mop '^))
+              (let ((adu (deriv (base mop) wrt)))
+                (when (number? adu)
+                  (setf op mop
+                        u (base mop)
+                        du adu
+                        c (coefficient adu)))))
+            (unless op
+              (let ((adu (deriv mop wrt)))
+                (when (number? adu)
+                  (setf op mop
+                        u mop
+                        du adu
+                        c (coefficient adu)))))))
       (when (and op (equals op u))
         (setf op 'ident))
-      (values op u du (/ coeff c)))))
+      (values op u du (and c (/ coeff c))))))
 
 (defmethod antideriv ((expr (eql 'ident)))
   (lambda (u) (/ (^ u 2) 2)))

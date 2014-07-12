@@ -3,8 +3,10 @@
 (defexpr * (assoc-expr) ((identity :initform 1
                                    :allocation :class))
     (&rest args)
-  (assoc-expr '* args))
-
+  (let ((expr (assoc-expr '* args)))
+    (cond ((not (typep expr 'expr)) expr)
+          ((member 0 (args expr)) 0)
+          (t expr))))
 
 (defmethod deriv ((expr *) wrt &optional (n 1))
   (let ((args (args expr)) factors)
@@ -18,35 +20,48 @@
                 factors))))
     (apply #'+ (nreverse factors))))
 
-(defmethod level ((expr *))
-  (let* ((args (mapcan (lambda (arg)
-                         (if (typep arg '*)
-                             (args arg)
-                             (list arg)))
-                       (args expr)))
-         (powers (keep '^ args))
-         (singles (remove-duplicates (keep-symbols args)
-                                     :test #'eq))
-         (bases (remove-duplicates (mapcar #'base powers)
-                                   :test #'equals)))
-    (string-sort
-     (append
-      (list (reduce 'cl:* (keep-numbers args)))
-      (remove-numbers (remove-symbols (flunk '^ args)))
-      (mapcar (lambda (var)
-                (^ var
-                   (apply #'+
-                          (count var args)
-                          (mapcar #'exponent
-                                  (remove-if-not
-                                   (lambda (x)
-                                     (equals (base x) var))
-                                   powers)))))
-              (union bases singles :test #'eq))))))
+(defmethod level ((expr *)) ; ver
+  (let ((args (args expr))
+        (terms (make-hash-table :test #'equals))
+        (coeff 1) new-args)
+    (push (first args) args)
+    (do* ((%args args (rest (progn (pop args) args)))
+          (arg (first %args) (first %args)))
+         ((endp (rest args)))
+      (let (b e)
+        (cond
+          ((numberp arg)
+           (setf coeff (cl:* coeff arg)))
+          ((typep arg '*)
+           (appendf args (args arg))
+           (setf b arg e 1))
+          ((typep arg '^)
+           (setf b (base arg) e (exponent arg)))
+          ((typep arg 'exp)
+           (setf b 'exp e (exponent arg)))
+          (t (setf b arg e 1)))
+        (unless (or (numberp arg)
+                    (typep arg '*))
+          (setf (gethash b terms)
+                (if (gethash b terms)
+                    (+ (gethash b terms) e)
+                    e)))))
+    (maphash (lambda (b e)
+               (cond
+                 ((zero? b) (push 0 new-args))
+                 ((eql b 1))
+                 ((eql e 1) (push b new-args))
+                 ((eql b 'exp) (push (exp e) new-args))
+                 (t (push (^ b e) new-args))))
+             terms)
+    (push coeff new-args)
+    (string-sort new-args)))
 
 (defmethod coefficient ((expr *))
   (let ((arg (first (args expr))))
-    (if (number? arg) arg 1)))
+    (if (number? arg)
+        (values arg t)
+        (values 1 nil))))
 
 (defmethod number-free-term ((expr *))
   (let ((args (args expr)))
