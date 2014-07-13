@@ -24,4 +24,5 @@
 (defun string-sort (sequence)
   (sort (copy-list sequence) (lambda (elt1 elt2)
                                (string< (strings elt1)
-                                        (strings elt2)))))
+                                        (strings elt2)))))  
+  
