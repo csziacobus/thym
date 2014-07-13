@@ -16,4 +16,5 @@
            sqrt
            asin
            acos
-           atan))
+           atan
+           pi))

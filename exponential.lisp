@@ -8,6 +8,8 @@
 (defmethod exponent ((expr exp-base))
   (first (args expr)))
 
+(defmethod base ((expr exp-base)) e)
+
 (defexpr exp (exp-base) () (arg)
   (make-expr 'exp (list arg)))
 
