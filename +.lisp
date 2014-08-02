@@ -16,8 +16,8 @@
                 (iter (rest args) terms (cl:+ coeff arg)))
                ((typep arg '+)
                 (iter (append (rest args) (args arg))
-                        terms
-                        coeff))
+                      terms
+                      coeff))
                (t (with-coeff-term (c term) arg
                     (setf (gethash term terms)
                           (let ((val (gethash term terms)))
