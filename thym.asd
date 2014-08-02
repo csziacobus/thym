@@ -8,7 +8,8 @@
   :depends-on (#:anaphora
                #:alexandria
                #:cl-ppcre
-               #:cl-lex)
+               #:cl-lex
+               #:equals)
   :components
   ((:file "package")
    (:file "tokenize")

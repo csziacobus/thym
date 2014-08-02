@@ -1,7 +1,12 @@
 ;;;; package.lisp
 
 (defpackage #:thym
-  (:use #:cl #:anaphora #:alexandria #:cl-ppcre #:cl-lex)
+  (:use #:cl
+        #:anaphora
+        #:alexandria
+        #:cl-ppcre
+        #:cl-lex
+        #:equals)
   (:shadow arg
            exp
            log

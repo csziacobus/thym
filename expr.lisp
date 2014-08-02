@@ -97,19 +97,10 @@
     (apply #'+ (loop for i from 0 to n
                   collect (taylor-term expr i wrt n)))))
 
-(defgeneric equals (x y &rest keys &key recursive &allow-other-keys)
-  (:documentation "Generic equality.")
-  (:method (x y &key &allow-other-keys)
-    (equalp x y))
-  (:method ((x cons) (y cons) &key &allow-other-keys)
-    (tree-equal x y :test #'equals)))
+(defmethod hash-code ((x expr))
+  (sxhash (string-sort (mapcar #'hash-code (args x)))))
 
-(defun equals-hash (x)
-  (if (typep x 'expr)
-      (sxhash (string-sort (mapcar #'equals-hash (args x))))
-      (sxhash x)))
-
-(sb-ext:define-hash-table-test equals equals-hash)
+(sb-ext:define-hash-table-test equals hash-code)
 
 (defun preorder-traversal (expr)
   (labels ((%preorder-traversal (expr)
