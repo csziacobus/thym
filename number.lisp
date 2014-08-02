@@ -23,11 +23,12 @@
 (defmethod number-free-term ((expr number)) nil)
 (defmethod coefficient ((expr number)) expr)
 
-(defclass numeric-constant ()
-  ((value :initform (error "Must supply value.")
-          :initarg :value
-          :accessor value))
-  (:documentation "A mathematical constant with a numerical value."))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defclass numeric-constant ()
+    ((value :initform (error "Must supply value.")
+            :initarg :value
+            :accessor value))
+    (:documentation "A mathematical constant with a numerical value.")))
 
 (defmethod number? ((expr numeric-constant)) t)
 (defmethod zero? ((expr numeric-constant)) (zerop (value expr)))
