@@ -112,7 +112,7 @@
                            (preorder-traversal (cdr expr)))))))
     (flatten (%preorder-traversal expr))))
 
-(defun subs (expr old new)
+(defun subs (new old expr)
   "Traverses tree and substitutes symbols. Non-destructive but slow."
   (if (typep expr 'expr)
       (func expr (subs (args expr) old new))
