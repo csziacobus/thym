@@ -54,6 +54,14 @@
   (:documentation "Finds the number term.")
   (:method ((expr expr)) 1))
 
+(defgeneric base (expr)
+  (:documentation "Base of exponential.")
+  (:method ((expr expr)) expr))
+
+(defgeneric exponent (expr)
+  (:documentation "Exponent of exponential.")
+  (:method ((expr expr)) 1))
+
 (defgeneric copy (expr &key recursive)
   (:documentation "Copies expression.")
   (:method ((expr expr) &key (recursive t))
