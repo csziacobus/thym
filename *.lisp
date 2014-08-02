@@ -39,7 +39,6 @@
         (iter (args expr) (make-hash-table :test #'equals) 1)
       (let (new-args)
         (maphash (lambda (base expo)
-                   (print (list base expo))
                    (cond
                      ((null base) (error "bad hash ~A" hash))
                      ((zero? base) (push 0 new-args))
