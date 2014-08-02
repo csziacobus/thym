@@ -34,9 +34,6 @@
           exponent
           (^ base (+ exponent -1))))))
 
-(defmethod equals ((x ^) y &key &allow-other-keys) nil)
-(defmethod equals (x (y ^) &key &allow-other-keys) nil)
-
 (defmethod equals ((x ^) (y ^) &key &allow-other-keys)
   (equal (args x) (args y)))
 
