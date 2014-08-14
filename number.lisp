@@ -23,23 +23,30 @@
 (defmethod number-free-term ((expr number)) nil)
 (defmethod coefficient ((expr number)) expr)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defclass numeric-constant ()
-    ((value :initform (error "Must supply value.")
-            :initarg :value
-            :accessor value))
-    (:documentation "A mathematical constant with a numerical value.")))
+(defclass numeric-constant ()
+  ((value :initform (error "Must supply value.")
+          :initarg :value
+          :accessor value))
+  (:documentation "A mathematical constant with a numerical value."))
 
 (defmethod number? ((expr numeric-constant)) t)
 (defmethod zero? ((expr numeric-constant)) (zerop (value expr)))
+(defmethod coefficient ((expr numeric-constant)) 1)
+(defmethod number-free-term ((expr numeric-constant)) expr)
+(defmethod base ((expr numeric-constant)) expr)
+(defmethod exponent ((expr numeric-constant)) 1)
+(defmethod hash-code ((x numeric-constant)) (value x))
 
-(defconstant pi
+(defmethod equals ((x numeric-constant) (y numeric-constant) &key)
+  (= (value x) (value y)))
+
+(defparameter pi
   (make-instance 'numeric-constant :value cl:pi))
 
 (defmethod print-object ((object (eql pi)) stream)
   (princ "π" stream))
 
-(defconstant e
+(defparameter e
   (make-instance 'numeric-constant :value (cl:exp 1)))
 
 (defmethod print-object ((object (eql e)) stream)

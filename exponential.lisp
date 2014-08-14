@@ -21,9 +21,6 @@
 (defmethod antideriv ((expr exp))
   (lambda (u) (exp u)))
 
-(defmethod base ((expr exp))
-  (exp 1))
-
 (defmethod first-deriv ((expr exp) wrt)	expr)
 
 (defexpr log (efun) () (arg)

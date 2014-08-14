@@ -36,7 +36,9 @@
                             (if val (cl:+ exponent val) exponent)))
                     (iter (rest args) terms coeff))))))
     (multiple-value-bind (coeff hash)
-        (iter (args expr) (make-hash-table :test #'equals) 1)
+        (iter (args expr) (make-hash-table :test 'equals
+                                           #+ccl :hash-function #+ccl 'hash-code)
+              1)
       (let (new-args)
         (maphash (lambda (base expo)
                    (cond

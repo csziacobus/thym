@@ -24,7 +24,9 @@
                             (if val (cl:+ c val) c)))
                     (iter (rest args) terms coeff))))))
     (multiple-value-bind (coeff hash)
-        (iter (args expr) (make-hash-table :test #'equals) 0)
+        (iter (args expr) (make-hash-table :test 'equals
+                                           #+ccl :hash-function #+ccl 'hash-code)
+              0)
       (let (new-args)
         (maphash (lambda (term coeff)
                    (cond

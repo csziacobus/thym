@@ -108,6 +108,7 @@
 (defmethod hash-code ((x expr))
   (sxhash (string-sort (mapcar #'hash-code (args x)))))
 
+#+sbcl
 (sb-ext:define-hash-table-test equals hash-code)
 
 (defun preorder-traversal (expr)

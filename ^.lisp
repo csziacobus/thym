@@ -8,6 +8,7 @@
         ((eql exponent 0) 1)
         ((eql exponent 1) base)
         ((eql base 1) 1)
+        ((eql base e) (exp exponent))
         (t (make-expr '^ (list base exponent)))))
 
 (defmethod print-object ((expr ^) stream)
