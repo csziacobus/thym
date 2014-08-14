@@ -21,7 +21,7 @@
    (:file "function")
    (:file "operations")
    (:file "+")
-   (:file "*")
+   (:file "mul")
    (:file "exponential")
    (:file "^")
    (:file "trigonometric")
