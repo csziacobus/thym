@@ -22,6 +22,7 @@
 (defmethod free-symbols ((expr number)) nil)
 (defmethod number-free-term ((expr number)) nil)
 (defmethod coefficient ((expr number)) expr)
+(defmethod negative? ((expr number)) (minusp expr))
 
 (defclass numeric-constant ()
   ((value :initform (error "Must supply value.")
@@ -40,14 +41,14 @@
 (defmethod equals ((x numeric-constant) (y numeric-constant) &key)
   (= (value x) (value y)))
 
-(defparameter pi
-  (make-instance 'numeric-constant :value cl:pi))
+(defmacro defnumber (name value representation)
+  `(progn
+     (defparameter ,name
+       (make-instance 'numeric-constant :value ,value))
+     (defmethod print-object ((object (eql ,name)) stream)
+       (princ ',representation stream))))
 
-(defmethod print-object ((object (eql pi)) stream)
-  (princ "π" stream))
-
-(defparameter e
-  (make-instance 'numeric-constant :value (cl:exp 1)))
-
-(defmethod print-object ((object (eql e)) stream)
-  (princ "e" stream))
+(defnumber pi cl:pi π)
+(defnumber e (cl:exp 1) e)
+(defnumber oo 'inf ∞)
+(defnumber -oo '-inf -∞)

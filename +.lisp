@@ -1,40 +1,34 @@
 (in-package #:thym)
 
-(defexpr + (assoc-expr) ((identity :allocation :class
-                                   :initform 0))
-    (&rest args)
-  (assoc-expr '+ args))
-
 (defmethod deriv ((expr +) wrt &optional (n 1))
-  (apply #'+ (mapcar (rcurry #'deriv wrt n) (args expr))))
+  (apply #'+ (mapcar (rcurry #'deriv wrt) (args expr))))
 
-(defmethod level ((expr +))
-  (labels ((iter (args terms coeff &aux (arg (first args)))
-             (cond
-               ((null args) (values coeff terms))
-               ((numberp arg)
-                (iter (rest args) terms (cl:+ coeff arg)))
-               ((typep arg '+)
-                (iter (append (rest args) (args arg))
-                      terms
-                      coeff))
-               (t (with-coeff-term (c term) arg
-                    (setf (gethash term terms)
-                          (let ((val (gethash term terms)))
-                            (if val (cl:+ c val) c)))
-                    (iter (rest args) terms coeff))))))
-    (multiple-value-bind (coeff hash)
-        (iter (args expr) (make-hash-table :test 'equals
-                                           #+ccl :hash-function #+ccl 'hash-code)
-              0)
-      (let (new-args)
-        (maphash (lambda (term coeff)
-                   (cond
-                     ((null term) (error "bad hash ~A" hash))
-                     ((zero? coeff))
-                     ((eql coeff 1) (push term new-args))
-                     ((typep term '*)
-                      (push (apply #'* coeff (args term)) new-args))
-                     (t (push (* coeff term) new-args))))
-                 hash)
-        (string-sort (push coeff new-args))))))
+(defmethod collect-like-terms ((expr +))
+  (labels ((recur (args terms constant &aux (arg (first args)))
+             (typecase arg
+               (null (values terms constant))
+               (number (recur (rest args)
+                              terms
+                              (cl:+ constant arg)))
+               (+ (recur (append (rest args) (args arg))
+                         terms
+                         constant))
+               (otherwise
+                (with-coeff-term (coeff term) arg
+                  (recur (rest args)
+                         (let ((val (assoc term terms
+                                           :test #'equals)))
+                           (if val
+                               (progn (incf (cdr val) coeff)
+                                      terms)
+                               (acons term coeff terms)))
+                         constant))))))
+    (multiple-value-bind (terms constant)
+        (recur (args expr) () 0)
+      (string-sort
+       (cons constant (iter (for (term . coeff) in terms)
+                        (cond ((zero? coeff))
+                              ((eql coeff 1) (collect term))
+                              ((typep term '*)
+                               (collect (apply #'* coeff (args term))))
+                              (t (collect (* coeff term))))))))))

@@ -11,7 +11,10 @@
 (defmethod base ((expr exp-base)) e)
 
 (defexpr exp (exp-base) () (arg)
-  (make-expr 'exp (list arg)))
+  (case arg
+    (0 1)
+    (1 e)
+    (otherwise (make-expr 'exp (list arg)))))
 
 (defmethod print-object ((object exp) stream)
   (format stream

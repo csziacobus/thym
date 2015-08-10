@@ -1,19 +1,26 @@
 (in-package #:thym)
 
 (defclass expr ()
-  ((args :accessor %args :initarg :args)
-   (maker :accessor maker)))
+  ((%args :accessor args :initarg :args)
+   (%maker :accessor maker :initarg :maker)))
+
+(defmacro with-args (args expr &body body)
+  `(let ((,args (args ,expr)))
+     ,@body))
+
+(defmethod print-object ((expr expr) stream)
+  (format stream "~A(~{~a~^, ~})" (type-of expr) (args expr)))
 
 (defmacro defexpr (name direct-superclasses additional-slots
                    lambda-list &body body)
   `(progn
      (defclass ,name ,direct-superclasses
-       ,additional-slots)
+       ,additional-slots
+       (:default-initargs :maker #',name))
      (when ',lambda-list
-       (defun ,name ,lambda-list
-         ,@body)
-       (defmethod initialize-instance :after ((instance ,name) &key)
-                  (setf (maker instance) ',name)))))
+       (defgeneric ,name ,lambda-list)
+       (defmethod ,name ,lambda-list
+         ,@body))))
 
 (defun func (instance args)
   (apply (maker instance) args))
@@ -35,15 +42,19 @@
                               types))
                       (preorder-traversal expr))))))
 
-(defgeneric args (expr)
-  (:documentation
-   "Returns the args of an expression.")
-  (:method ((expr expr))
-    (%args expr)))
+(defgeneric negative? (expr)
+  (:documentation "Is a number negative?")
+  (:method ((expr t)) nil))
 
 (defgeneric deriv (expr wrt &optional n)
   (:documentation
-   "Takes the derivative of an expression n-times."))
+   "Takes the derivative of an expression n-times.")
+  (:method :around (expr wrt &optional (n 1))
+    (if (zerop n)
+        expr
+        (loop repeat n
+              for deriv = (call-next-method) then (deriv deriv wrt)
+              finally (return deriv)))))
 
 (defgeneric free-symbols (expr)
   (:documentation "Finds free symbols.")
@@ -105,12 +116,6 @@
     (apply #'+ (loop for i from 0 to n
                   collect (taylor-term expr i wrt n)))))
 
-(defmethod hash-code ((x expr))
-  (sxhash (string-sort (mapcar #'hash-code (args x)))))
-
-#+sbcl
-(sb-ext:define-hash-table-test equals hash-code)
-
 (defun preorder-traversal (expr)
   (labels ((%preorder-traversal (expr)
              (if (typep expr 'expr)
@@ -121,12 +126,12 @@
                            (preorder-traversal (cdr expr)))))))
     (flatten (%preorder-traversal expr))))
 
-(defun subs (new old expr)
+(defun subs (expr old new)
   "Traverses tree and substitutes symbols. Non-destructive but slow."
   (if (typep expr 'expr)
       (func expr (subs (args expr) old new))
       (if (atom expr)
-          (if (eql expr old) new expr)
+          (if (equals expr old) new expr)
           (cons (subs (car expr) old new)
                 (subs (cdr expr) old new)))))
 

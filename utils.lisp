@@ -22,7 +22,11 @@
 
 ;; * relies on numbers sorting first 
 (defun string-sort (sequence)
-  (sort (copy-list sequence) (lambda (elt1 elt2)
-                               (string< (strings elt1)
-                                        (strings elt2)))))  
-  
+  (sort (copy-list sequence)
+        (lambda (elt1 elt2)
+          (block nil
+            (typecase elt1
+              (symbol (if (typep elt2 'expr) (return t)))
+              (expr (if (typep elt1 'symbol) (return nil))))
+            (string< (strings elt1)
+                     (strings elt2))))))

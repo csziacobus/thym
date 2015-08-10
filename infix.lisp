@@ -5,11 +5,10 @@
 (defmacro define-infix (op precedence &key (assoc :left))
   `(add-op ',op ,precedence :assoc ,assoc))
 
-(let (infix-ops)
-  (defun infix-props (op) (assoc op infix-ops))
-  
-  (defun add-op (op precedence &key assoc)
-    (pushnew `(,op ,precedence ,assoc) infix-ops :test #'equal)))
+(defvar *ops* nil)
+(defun infix-props (op) (assoc op *ops*))
+(defun add-op (op precedence &key assoc)
+  (pushnew `(,op ,precedence ,assoc) *ops* :test #'equal))
 
 (define-infix = 1)
 (define-infix + 2)
@@ -38,7 +37,7 @@
 
 (defun parenthesize (expr)
   "Fully parenthesizes an infix expression."
-  (cond ((atom expr) expr)
+  (cond ((or (atom expr) (starts-with 'quote expr)) expr)
         ((singlep expr) (parenthesize (first expr)))
         ((eq (first expr) '-) expr) ; Unary minus`
         ((member-if #'infix-p expr)
@@ -79,7 +78,7 @@
     (rest (loop for arg in args
              collect op collect (list-if-precedence op arg)))))
 
-(defmacro parse (string)
+(defun parse (string)
   (funcall (compose #'infix->prefix
                     #'parenthesize
                     #'tokenize)

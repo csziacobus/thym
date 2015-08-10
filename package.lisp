@@ -1,12 +1,13 @@
 ;;;; package.lisp
 
-(defpackage #:thym
+(defpackage thym
   (:use #:cl
         #:anaphora
         #:alexandria
         #:cl-ppcre
         #:cl-lex
-        #:equals)
+        #:equals
+        #:iter)
   (:shadow arg
            exp
            log
@@ -23,3 +24,9 @@
            acos
            atan
            pi))
+
+(defpackage thym-web
+  (:use #:cl
+        #:hunchentoot
+        #:cl-who
+        #:parenscript))

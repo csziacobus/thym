@@ -9,6 +9,8 @@
         ((eql exponent 1) base)
         ((eql base 1) 1)
         ((eql base e) (exp exponent))
+        ((typep base '^)
+         (^ (base base) (* exponent (exponent base))))
         (t (make-expr '^ (list base exponent)))))
 
 (defmethod print-object ((expr ^) stream)
@@ -17,21 +19,21 @@
           (list-if-precedence '^ (base expr))
           (list-if-precedence '^ (exponent expr))))
 
-(defmacro power-bind ((base exponent) instance &body body)
+(defmacro with-base-exponent ((base exponent) instance &body body)
   `(let ((,base (base ,instance))
          (,exponent (exponent ,instance)))
      ,@body))
 
 (defmethod base ((expr ^))
   (first (args expr)))
-
+          
 (defmethod exponent ((expr ^))
   (second (args expr)))
 
 (defmethod deriv ((expr ^) wrt &optional (n 1))
-  (power-bind (base exponent) expr
-    (+ (* expr (deriv exponent wrt n) (log base))
-       (* (deriv base wrt n)
+  (with-base-exponent (base exponent) expr
+    (+ (* expr (deriv exponent wrt) (log base))
+       (* (deriv base wrt)
           exponent
           (^ base (+ exponent -1))))))
 

@@ -1,8 +1,14 @@
 (in-package #:thym)
 
+(defclass integral (add-with-limits) ())
+
 (defexpr integral (add-with-limits) () (function &rest limits)
   "Unevaluated integral."
   (make-expr 'integral (list* function limits)))
+
+(defgeneric antiderivative (expr)
+  (:documentation "Return the antiderivative of a")
+  )
 
 (defmethod print-object ((expr integral) stream)
   (format stream "ʃ ~A d~{~A~}" (fun expr) (limits expr)))
@@ -185,3 +191,8 @@
 
 (defmethod antideriv ((expr (eql 'ident)))
   (lambda (u) (/ (^ u 2) 2)))
+
+(defun usub (integral var u phi)
+  ; int f (x) dx = int f(phi(u)) phi'(u) du
+  (let ((phi-prime (deriv phi u)))
+    (integral (* (subs (fun integral) var phi) phi-prime)  `(,u))))

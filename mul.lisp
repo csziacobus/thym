@@ -1,69 +1,69 @@
 (in-package #:thym)
 
-(defexpr * (assoc-expr) ((identity :initform 1
-                                   :allocation :class))
-    (&rest args)
-  (let ((expr (assoc-expr '* args)))
-    (cond ((not (typep expr 'expr)) expr)
-          ((member 0 (args expr)) 0)
-          (t expr))))
+(define-associative-expr * 1)
 
 (defmethod deriv ((expr *) wrt &optional (n 1))
-  (let ((args (args expr)) factors)
-    (dotimes (i (length args))
-      (let ((term (deriv (nth i args) wrt n)))
-        (unless (eql term 0)
-          (push (apply #'* 
-                       (append (nthcdr (1+ i) args)
-                               (list term)
-                               (subseq args 0 i)))
-                factors))))
-    (apply #'+ (nreverse factors))))
+  (let ((args (args expr)))
+    (apply #'+
+           (iter (for i from 0 to (length args))
+             (let ((term (deriv (nth i args) wrt)))
+               (unless (eql term 0)
+                 (collect (apply #'*
+                                 term
+                                 (append (nthcdr (1+ i) args)
+                                         (subseq args 0 i))))))))))
 
-(defmethod level ((expr *))
-  (labels ((iter (args terms coeff &aux (arg (first args)))
+(defmethod collect-like-terms ((expr *))
+  (when (member 0 (args expr))
+    (return-from collect-like-terms '(0)))
+  (labels ((rec (args terms coeff &aux (arg (first args)))
              (cond
                ((null args) (values coeff terms))
                ((numberp arg)
-                (iter (rest args) terms (cl:* coeff arg)))
+                (rec (rest args) terms (cl:* coeff arg)))
                ((typep arg '*)
-                (iter (append (rest args) (args arg))
-                      terms
-                      coeff))
-               (t (power-bind (base exponent) arg
-                    (setf (gethash base terms)
-                          (let ((val (gethash base terms)))
-                            (if val (cl:+ exponent val) exponent)))
-                    (iter (rest args) terms coeff))))))
-    (multiple-value-bind (coeff hash)
-        (iter (args expr) (make-hash-table :test 'equals
-                                           #+ccl :hash-function #+ccl 'hash-code)
-              1)
-      (let (new-args)
-        (maphash (lambda (base expo)
-                   (cond
-                     ((null base) (error "bad hash ~A" hash))
-                     ((zero? base) (push 0 new-args))
-                     ((eql expo 1) (push base new-args))
-                     ((eql expo 0))
-                     ((eql base 1))
-                     (t (push (^ base expo) new-args))))
-                 hash)
-        (string-sort (push coeff new-args))))))
+                (rec (append (rest args) (args arg))
+                     terms
+                     coeff))
+               (t (with-base-exponent (base exponent) arg
+                    (rec (rest args)
+                         (let ((val (assoc base terms :test #'equals)))
+                           (if val
+                               (prog1 terms
+                                 (setf (cdr val)
+                                       (cl:+ exponent (cdr val))))
+                               (acons base exponent terms)))
+                         coeff))))))
+    (multiple-value-bind (coeff alist) (rec (args expr) () 1)
+      (string-sort
+       (cons coeff (iter (for (base . exponent) in alist)
+                     (cond ((zero? base) (collect base))
+                           ((eql exponent 1) (collect base))
+                           ((zero? exponent))
+                           ((eql base 1))
+                           (t (collect (^ base exponent))))))))))
 
 (defmethod coefficient ((expr *))
-  (let ((arg (first (args expr))))
-    (if (number? arg)
-        (values arg t)
-        (values 1 nil))))
+  (let ((numbers (keep-numbers (args expr))))
+    (values (apply #'* numbers)
+            (not (eq (args expr) numbers)))))
 
 (defmethod number-free-term ((expr *))
-  (let ((args (args expr)))
-    (if (number? (first args))
-        (apply #'* (rest args))
-        expr)))
+  (let ((number-free (remove-numbers (args expr))))
+    (values (apply #'* number-free)
+            (not (eq (args expr) number-free)))))
+
+(defun coefficient-wrt (expr wrt)
+  (if (zero? expr)
+      0
+      (apply #'* (remove wrt (args expr) :test #'equals))))
 
 (defmacro with-coeff-term ((coefficient number-free-term) expr &body body)
   `(let ((,coefficient (coefficient ,expr))
          (,number-free-term (number-free-term ,expr)))
      ,@body))
+
+(defmethod negative? ((expr expr))
+  (member-if (lambda (arg)
+               (and (numberp arg) (minusp arg)))
+             (args expr)))
